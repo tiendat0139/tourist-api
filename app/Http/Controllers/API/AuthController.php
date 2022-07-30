@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Company;
-use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -62,7 +61,6 @@ class AuthController extends Controller
         return response()->json([
             'status' => 200,
             'username' => $user->name,
-
             'token' => $token,
             'message' => 'Register Successfully'
         ]);
@@ -93,15 +91,18 @@ class AuthController extends Controller
                 ]);
             } else {
                 if($user->company){
-                    $token = $user->createToken($user->email .'_Token', ['company:insert'])->plainTextToken;
+                    $token = $user->createToken($user->email .'_CompanyToken', ['server:company'])->plainTextToken;
+                    $iscompany = 'ok';
                 } else {
-                    $token = $user->createToken($user->email.'_Token')->plainTextToken;
+                    $token = $user->createToken($user->email.'_Token',[])->plainTextToken;
+                    $iscompany = 'no';
                 }
                 return response()->json([
                     'status'=>200,
                     'auth_name' => $user->name,
                     'auth_token'=> $token,
-                    'message' => 'Login Successfully'
+                    'message' => 'Login Successfully',
+                    'iscompany' => $iscompany
                 ]);
             }
         }
@@ -114,7 +115,6 @@ class AuthController extends Controller
 
         $user = auth()->user();
         $user->tokens()->delete();
-
         return response()->json([
             'status' => 200,
             'message' => 'Sign out Successfully'
